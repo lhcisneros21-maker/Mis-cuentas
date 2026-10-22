@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101010">
+<title>Mis cuentas bancarias</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#101010;color:#f7f3e9;
+  font-family:Arial,sans-serif;padding:24px 16px;
+}
+main{max-width:440px;margin:auto}
+header{border-bottom:1px solid #59492b;padding:8px 0 20px}
+.tag{font-size:11px;letter-spacing:2px;color:#d8b56a}
+h1{font-size:28px;margin:10px 0 5px}
+.gold{color:#d8b56a}
+.sub{color:#aaa;font-size:14px;margin:0}
+.card{
+  background:#191919;border:1px solid #51452c;
+  border-radius:15px;padding:17px;margin-top:16px;
+}
+.bank{font-size:19px;color:#e3c47e;margin:0}
+.type{font-size:12px;color:#aaa;margin:7px 0 18px}
+.label{font-size:10px;letter-spacing:1px;color:#aaa;margin-top:13px}
+.value{font-size:14px;overflow-wrap:anywhere;margin-top:5px}
+.buttons{display:grid;gap:8px;margin-top:17px}
+button{
+  min-height:45px;border:1px solid #d8b56a;border-radius:9px;
+  padding:11px;background:transparent;color:#f0d99f;
+  font-size:12px;font-weight:bold;cursor:pointer;
+}
+.primary{background:#d8b56a;color:#15120b}
+button:focus-visible{outline:2px solid white;outline-offset:3px}
+#status{color:#e3c47e;font-size:13px;min-height:20px;margin-top:15px}
+footer{color:#888;font-size:11px;text-align:center;margin-top:25px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="tag">TRANSFERENCIAS</div>
+  <h1>Mis cuentas<span class="gold">.</span></h1>
+  <p class="sub">Luis Eduardo Hernandez</p>
+</header>
+
+<div id="accounts"></div>
+<p id="status" role="status" aria-live="polite"></p>
+<footer>Selecciona una cuenta y copia los datos que necesites.</footer>
+</main>
+
+<script>
+const titular = "Luis Eduardo Hernandez";
+const rut = "26512530-1";
+
+const cuentas = [
+  {
+    banco: "Falabella",
+    tipo: "Cuenta corriente",
+    numero: "1-519-009821-9"
+  },
+  {
+    banco: "Bci / MACHBANK",
+    tipo: "Cuenta vista",
+    numero: "777026512530"
+  },
+  {
+    banco: "BancoEstado",
+    tipo: "Cuenta RUT / vista",
+    numero: "26512530"
+  }
+];
+
+const contenedor = document.getElementById("accounts");
+const estado = document.getElementById("status");
+
+function crearElemento(etiqueta, clase, texto) {
+  const elemento = document.createElement(etiqueta);
+  if (clase) elemento.className = clase;
+  if (texto !== undefined) elemento.textContent = texto;
+  return elemento;
+}
+
+function copiar(texto, mensaje) {
+  const area = document.createElement("textarea");
+  area.value = texto;
+  area.readOnly = true;
+  area.style.position = "absolute";
+  area.style.left = "-9999px";
+  document.body.appendChild(area);
+  area.select();
+
+  let copiado = false;
+  try {
+    copiado = document.execCommand("copy");
+  } catch (e) {}
+
+  area.remove();
+
+  if (copiado) {
+    estado.textContent = mensaje + " ✓";
+  } else {
+    estado.textContent =
+      "No se pudo copiar automáticamente. Mantén pulsado el dato para copiarlo.";
+  }
+}
+
+cuentas.forEach((cuenta) => {
+  const tarjeta = crearElemento("section", "card");
+  tarjeta.append(crearElemento("h2", "bank", cuenta.banco));
+  tarjeta.append(crearElemento("p", "type", cuenta.tipo));
+
+  [
+    ["TITULAR", titular],
+    ["RUT", rut],
+    ["NÚMERO DE CUENTA", cuenta.numero]
+  ].forEach(([etiqueta, valor]) => {
+    const fila = document.createElement("div");
+    fila.append(
+      crearElemento("div", "label", etiqueta),
+      crearElemento("div", "value", valor)
+    );
+    tarjeta.append(fila);
+  });
+
+  const botones = crearElemento("div", "buttons");
+
+  const todos = crearElemento("button", "primary", "COPIAR TODOS LOS DATOS");
+  todos.type = "button";
+  todos.addEventListener("click", () => copiar(
+    "Banco: " + cuenta.banco +
+    "\nTitular: " + titular +
+    "\nRUT: " + rut +
+    "\nTipo de cuenta: " + cuenta.tipo +
+    "\nNúmero de cuenta: " + cuenta.numero,
+    "Datos de " + cuenta.banco + " copiados"
+  ));
+
+  const numero = crearElemento("button", "", "COPIAR NÚMERO DE CUENTA");
+  numero.type = "button";
+  numero.addEventListener("click", () =>
+    copiar(cuenta.numero, "Número de cuenta copiado")
+  );
+
+  const copiarRut = crearElemento("button", "", "COPIAR RUT");
+  copiarRut.type = "button";
+  copiarRut.addEventListener("click", () =>
+    copiar(rut, "RUT copiado")
+  );
+
+  botones.append(todos, numero, copiarRut);
+  tarjeta.append(botones);
+  contenedor.append(tarjeta);
+});
+</script>
+</body>
+</html>
